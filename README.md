@@ -3,9 +3,9 @@ A shell pipeline for automatically analyzing all RNA-seq data in a folder based 
 
 ## Introduction
 
-*run_RNAseq_STAR.RSEM.sh* includes QC, trimming, contamination screening, mapping, gene/isoform expression quantification, and summary steps.
+* *run_RNAseq_STAR.RSEM.sh* includes QC, trimming, contamination screening, mapping, gene/isoform expression quantification, and summary steps.
 
-*callSNP_RNAseq.sh* is for SNP calling using the RNA-seq analysis results for each sample.
+* *callSNP_RNAseq.sh* is for SNP calling using the RNA-seq analysis results for each sample.
 
 Downstream analyses, such as different expression analysis and pathway enrichment analaysis, are case specific, so are not included in this pipeline.
 
@@ -18,9 +18,9 @@ The paths of some genome files and tools need to be modified accordingly:
 
 ## Usage
 ```
-run_RNAseq_STAR.RSEM.sh g <hg19, mm10 or rn6> <-p> -i <path_of_inputs> -o <path_of_outputs> -t <threads>
+* run_RNAseq_STAR.RSEM.sh g <hg19, mm10 or rn6> <-p> -i <path_of_inputs> -o <path_of_outputs> -t <threads>
 
-callSNP_RNAseq.sh -g <hg19> -i <input_folder> -t <threads>
+* callSNP_RNAseq.sh -g <hg19> -i <input_folder> -t <threads>
 ```
 
 ## Arguments
@@ -34,6 +34,7 @@ callSNP_RNAseq.sh -g <hg19> -i <input_folder> -t <threads>
 *run_RNAseq_STAR.RSEM.sh* generates:
 * A **qc** folder including QC results.
 * A **process** folder including a summary table, gene/isoform expression count/FPKM/TPM tables, and subfolders of analysis results for each sample.
+
 *callSNP_RNAseq.sh* generates SNP calling vcf files in each sample folder.
 
 ## Contact
