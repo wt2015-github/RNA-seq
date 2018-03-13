@@ -38,4 +38,4 @@ callSNP_RNAseq.sh -g <hg19> -i <input_folder> -t <threads>
 *callSNP_RNAseq.sh* generates SNP calling vcf files in each sample folder.
 
 ## Contact
-[Ting Wang](http://wt2015-github.github.io/) ([email](wang9ting@gmail.com)).
+[Ting Wang](http://wt2015-github.github.io/) (wang9ting@gmail.com).
