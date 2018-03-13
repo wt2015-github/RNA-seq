@@ -18,7 +18,7 @@ The paths of some genome files and tools need to be modified accordingly:
 
 ## Usage
 ```
-run_RNAseq_STAR.RSEM.sh g <hg19, mm10 or rn6> <-p> -i <path_of_inputs> -o <path_of_outputs> -t <threads>
+run_RNAseq_STAR.RSEM.sh -g <hg19, mm10 or rn6> <-p> -i <path_of_inputs> -o <path_of_outputs> -t <threads>
 
 callSNP_RNAseq.sh -g <hg19> -i <input_folder> -t <threads>
 ```
