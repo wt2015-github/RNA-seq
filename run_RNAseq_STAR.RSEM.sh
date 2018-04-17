@@ -1,14 +1,14 @@
 #!/bin/bash
-#Ting Wang, 201703
+#Author: T. Wang, 2017-03
 
 manual="
 Shell script for automatically analyzing all RNA-seq data in a folder based on STAR-RSEM.
-QC with fastqc at the beginning and use multiqc to summary qc figures.
+QC with  at the beginning and use multiqc to summary qc figures.
 Note RSEM --star can not implement STAR for all samples with a shared memory of genome, so separate the two steps!
 Usage:
-    run_RNAseq_RSEM.sh -g <hg19, mm10 or rn6> <-p> -i <path_of_inputs> -o <path_of_outputs> -t <threads>
+    run_RNAseq_RSEM.sh -g <hg19> <-p> -i <path_of_inputs> -o <path_of_outputs> -t <threads>
 Options:
-    -g    set hg19, mm10, or rn6 as reference genome, default is hg19
+    -g    set hg19 as reference genome, default is hg19
     -p    set this for paired-end data, default is for single-end data
     -i    directory of input fastq or fastq.gz files
     -o    directory for output files, please use full pathway
@@ -51,6 +51,10 @@ case $ARGS in
 esac
 done
 
+cd .
+echo "Current working directory is:"
+echo $PWD
+
 echo ${genome:="hg19"} >/dev/null
 echo ${datatype:="SE"} >/dev/null
 echo ${threads:=1} >/dev/null
@@ -58,80 +62,66 @@ echo ${pathin:="nopathin"} >/dev/null
 echo ${pathout:="nopathout"} >/dev/null
 
 if [[ ${pathin} == "nopathin" ]]; then
-    echo "=== please set directory of inputs!! === ${manual}" >&2
+    echo "=== Please set directory of inputs === ${manual}" >&2
     exit 1
 elif [[ ! -d ${pathin} ]]; then
-    echo "=== input directory does not exist!! === ${manual}" >&2
+    echo "=== Input directory does not exist! === ${manual}" >&2
     exit 1
 fi
 
 if [[ ${pathout} == "nopathout" ]]; then
-    echo "=== please set directory of outputs!! === ${manual}" >&2
+    echo "=== Please set directory of outputs === ${manual}" >&2
     exit 1
 elif [[ ! -d ${pathout} ]]; then
-    echo "=== output directory does not exist!! === ${manual}" >&2
+    echo "=== Output directory does not exist! === ${manual}" >&2
     exit 1
 fi
 
 (( ${threads} )) 2>/dev/null
 if [[ $? != 0 || ! ${threads} -ge 1 ]]; then
-    echo "=== thread number should be a positive integer!! === ${manual}" >&2
+    echo "=== Thread number must be a positive integer! === ${manual}" >&2
     exit 1
 fi
 echo ""
-echo "=== set ${threads} threads for each sample in parallel analysis ==="
+echo "=== Set ${threads} threads for each sample in parallel analysis ==="
 
 if [[ ${genome} == "hg19" ]]; then
     echo "=== set reference genome: hg19 ==="
-    genome_RSEM_STAR_index="/home1/data/iGenomes/Homo_sapiens/UCSC/hg19/Sequence/RSEM_STAR_Index"
-    genome_RSEM_STAR_ref="/home1/data/iGenomes/Homo_sapiens/UCSC/hg19/Sequence/RSEM_STAR_Index/human_ref"
-    genome_fa="/home1/data/iGenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
-    genome_gtf="/home1/data/iGenomes/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
-    genome_refSeq_Bed="/home1/data/iGenomes/Homo_sapiens/UCSC/hg19/Annotation/Genes/hg19_RefSeq.bed"
-elif [[ ${genome} == "mm10" ]]; then
-    echo "=== set reference genome: mm10 ==="
-    genome_RSEM_STAR_index="/home1/data/iGenomes/Mus_musculus/UCSC/mm10/Sequence/RSEM_STAR_Index"
-    genome_RSEM_STAR_ref="/home1/data/iGenomes/Mus_musculus/UCSC/mm10/Sequence/RSEM_STAR_Index/mouse_ref"
-    genome_fa="/home1/data/iGenomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa"
-    genome_gtf="/home1/data/iGenomes/Mus_musculus/UCSC/mm10/Annotation/Genes/genes.gtf"
-    genome_refSeq_Bed="/home1/data/iGenomes/Mus_musculus/UCSC/mm10/Annotation/Genes/mm10_RefSeq.bed"
-elif [[ ${genome} == "rn6" ]]; then
-    echo "=== set reference genome: rn6 ==="
-    genome_RSEM_STAR_index="/home1/data/iGenomes/Rattus_norvegicus/UCSC/rn6/Sequence/RSEM_STAR_Index"
-    genome_RSEM_STAR_ref="/home1/data/iGenomes/Rattus_norvegicus/UCSC/rn6/Sequence/RSEM_STAR_Index/rat_ref"
-    genome_fa="/home1/data/iGenomes/Rattus_norvegicus/UCSC/rn6/Sequence/WholeGenomeFasta/genome.fa"
-    genome_gtf="/home1/data/iGenomes/Rattus_norvegicus/UCSC/rn6/Annotation/Genes/genes.gtf"
-    genome_refSeq_Bed="/home1/data/iGenomes/Rattus_norvegicus/UCSC/rn6/Annotation/Genes/rn6_RefSeq.bed"
+    genome_RSEM_STAR_index="/iGenomes/Homo_sapiens/UCSC/hg19/Sequence/RSEM_STAR_Index"
+    genome_RSEM_STAR_ref="/iGenomes/Homo_sapiens/UCSC/hg19/Sequence/RSEM_STAR_Index/human_ref"
+    genome_fa="/iGenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
+    genome_gtf="/iGenomes/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
+    genome_refSeq_Bed="/iGenomes/Homo_sapiens/UCSC/hg19/Annotation/Genes/hg19_RefSeq.bed"
 else
-    echo "=== supported reference genomes are hg19, mm10 and rn6 === ${manual}" >&2
+    echo "=== Supported reference genomes is hg19 === ${manual}" >&2
     exit 1
 fi
 
 fastq_files=(`find ${pathin} -maxdepth 1 -name "*.fastq*" -type f | sort`)
 if [[ ${#fastq_files[@]} -eq 0 ]]; then
-    echo "=== there is no fastq or fastq.gz file in input directory!! === ${manual}" >&2
+    echo "=== No .fastq or .fastq.gz file found in input directory! === ${manual}" >&2
     exit 1
 else
-    echo "=== there are ${#fastq_files[@]} raw fastq files in input directory ==="
+    echo "=== There are ${#fastq_files[@]} raw fastq files in input directory ==="
 fi
 
 if [[ ${datatype} == "PE" ]]; then
-    echo "=== quality control with FastQC ==="
+    echo "=== Quality control with FastQC ==="
     mkdir ${pathout}/fastqc
     for file in ${fastq_files[@]}; do fastqc $file -t ${threads} -o ${pathout}/fastqc/ & done
     wait
     fastqc_files=(`ls ${pathout}/fastqc/*fastqc.zip`)
     if [[ ${#fastq_files[@]} -ne ${#fastqc_files[@]} ]]; then
-        echo "=== some samples not pass fastqc!!===" >&2
+        echo "=== Some samples did not pass fastqc! ===" >&2
         exit 1
     fi
     multiqc -o ${pathout}/qc/ ${pathout}/fastqc/
     mv ${pathout}/fastqc ${pathout}/qc/
-    echo "=== load genome into shared memory for parallel alignment ==="
+    echo "=== Load-genome into shared memory for parallel alignment ==="
     mkdir ${pathout}/tmp
     STAR --genomeDir ${genome_RSEM_STAR_index} --genomeLoad LoadAndExit --outFileNamePrefix ${pathout}/tmp/
     rm -rdf ${pathout}/tmp
-    echo "=== parallel analyzing paired-end RNA-seq data, see log.all.txt in each subfolder ==="
+    echo "=== Parallel-analyzing paired-end RNA-seq data, see log.all.txt in each subfolder ==="
     mkdir ${pathout}/process
     for ((i=0; i<${#fastq_files[@]}; i+=2)); do
         subfolder=$(echo ${fastq_files[$i]} | rev | cut -d '/' -f1 | rev | cut -d '.' -f1)
@@ -162,7 +152,7 @@ if [[ ${datatype} == "PE" ]]; then
     done
 wait
 elif [[ ${datatype} == "SE" ]]; then
-    echo "=== quality control with FastQC ==="
+    echo "=== Quality control with FastQC ==="
     mkdir ${pathout}/fastqc
     for file in ${fastq_files[@]}; do fastqc $file -t ${threads} -o ${pathout}/fastqc/ & done
     wait
@@ -212,13 +202,13 @@ else
     exit 1
 fi
 
-echo "=== analysis finished, release genome from shared memory ==="
+echo "=== Analysis finished! Releasing genome from shared memory... ==="
 mkdir ${pathout}/tmp
 STAR --genomeDir ${genome_RSEM_STAR_index} --genomeLoad Remove --outFileNamePrefix ${pathout}/tmp/
 rm -rdf ${pathout}/tmp
 
 # Generate count table
-echo "=== generate count table for all samples with featureCounts ==="
+echo "=== Generating count table for all samples with featureCounts... ==="
 if [[ ${datatype} == "PE" ]]; then
     featureCounts -p -C -s 2 -T 10 -Q 10 -a ${genome_gtf} -o ${pathout}/process/counts.txt ${pathout}/process/*/Aligned.sortedByCoord.out.bam
 else
@@ -229,12 +219,12 @@ cut -f 1,7- ${pathout}/process/counts.txt > ${pathout}/process/counts2.txt
 mv ${pathout}/process/counts2.txt ${pathout}/process/counts.txt
 
 # Generate expected count table
-echo "=== generate expected count table ==="
+echo "=== Generating expected count table... ==="
 rsem-generate-data-matrix ${pathout}/process/*/rsem.genes.results > ${pathout}/process/rsem_expected_count_genes.txt
 rsem-generate-data-matrix ${pathout}/process/*/rsem.isoforms.results > ${pathout}/process/rsem_expected_count_isoforms.txt
 
 # Generate FPKM table
-echo "=== generate FPKM table for all samples ==="
+echo "=== Generating FPKM table for all samples... ==="
 folders=(`ls -d ${pathout}/process/*/ | rev | cut -d '/' -f2 | rev`)
 mkdir ${pathout}/process/tmp
 for ((i=0; i<${#folders[@]}; i++)); do cut -f 1,2,7 ${pathout}/process/${folders[$i]}/rsem.genes.results > ${pathout}/process/tmp/${folders[$i]}; done
@@ -261,7 +251,7 @@ cat ${pathout}/process/tmp/header.txt ${pathout}/process/tmp/fpkm_table.txt > ${
 rm -rdf ${pathout}/process/tmp
 
 # Generate TPM table
-echo "=== generate TPM table for all samples ==="
+echo "=== Generating TPM table for all samples... ==="
 folders=(`ls -d ${pathout}/process/*/ | rev | cut -d '/' -f2 | rev`)
 mkdir ${pathout}/process/tmp
 for ((i=0; i<${#folders[@]}; i++)); do cut -f 1,2,6 ${pathout}/process/${folders[$i]}/rsem.genes.results > ${pathout}/process/tmp/${folders[$i]}; done
@@ -288,11 +278,10 @@ cat ${pathout}/process/tmp/header.txt ${pathout}/process/tmp/tpm_table.txt > ${p
 rm -rdf ${pathout}/process/tmp
 
 # Generate summary table
-echo "=== generate summary table ==="
+echo "=== Generating summary table... ==="
 #summarize_RNAseq_RSEM.pl is added in /usr/local/bin/
 summarize_RNAseq_STAR.RSEM.pl ${pathout}/process/ ${pathout}/process/summary.txt
 mkdir ${pathout}/tables
 mv ${pathout}/process/*txt* ${pathout}/tables/
 
-echo "=== Finished ==="
-
+echo "=== Finished! ==="
